@@ -160,10 +160,6 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
 
         # Check trade result
         print(f"Trade result: {result}")
-        if result['status'] == 'filled':
-            print(f"{trade_type.capitalize()} order placed successfully at market price {entry_price}.")
-        else:
-            raise Exception(f"Failed to place trade: {result}")
 
     except Exception as e:
         # Print full error details for further debugging
