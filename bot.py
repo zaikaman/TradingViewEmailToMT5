@@ -118,6 +118,17 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
         symbol = 'BTCUSD'
         price_data = await connection.get_symbol_price(symbol)
         
+        # Check for existing open positions
+        open_positions = await connection.get_positions(symbol)
+
+        # Close any opposite position
+        if open_positions:
+            for position in open_positions:
+                if ((position['type'] == 'BUY' and trade_type == 'sell') or 
+                    (position['type'] == 'SELL' and trade_type == 'buy')):
+                    print(f"Closing opposite position: {position}")
+                    await connection.close_positions_by_symbol(symbol='BTCUSD')
+
         # If entry is "now", use the current market price
         if entry == "now":
             if trade_type == 'buy':
