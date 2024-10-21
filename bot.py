@@ -1,4 +1,3 @@
-
 import imaplib
 import email
 from email.header import decode_header
@@ -55,6 +54,7 @@ async def check_email():
                     body = msg.get_payload(decode=True).decode()
                     await process_email(subject, body)
 
+# Async function to process the email and place a trade
 async def process_email(subject, body):
     try:
         if "#BTCUSD" in body:
@@ -62,36 +62,25 @@ async def process_email(subject, body):
             pair = lines[0].split(": ")[1].strip()
             trade_type = lines[1].split(": ")[1].strip().lower()  # buy or sell
             entry_str = lines[2].split(": ")[1].strip()
-            stop_loss = lines[3].split(": ")[1].strip()
-            take_profit = lines[4].split(": ")[1].strip()
+            stop_loss = float(lines[3].split(": ")[1].strip())
+            take_profit = float(lines[4].split(": ")[1].strip())
 
             # Check if the entry is "now" or a numeric value
             if entry_str.lower() == "now":
-                entry = "now"  # Use "now" as a special marker for market price
+                entry = "now"  # Use the current market price later in the trade placement logic
             else:
-                entry = entry_str  # Otherwise keep the string as-is
+                entry = float(entry_str)  # Convert the entry to a float if it's a number
 
             # Log the signal
             message = f"{body.strip()}"
             bot.send_message(CHAT_ID, message)
 
-            # Convert stop_loss and take_profit to float, skip entry conversion
-            stop_loss = float(stop_loss)
-            take_profit = float(take_profit)
-
-            # Place trade on MetaApi (pass entry as None if "now", will use market price)
-            entry_value = None if entry == "now" else entry
-            await place_trade(trade_type, stop_loss, take_profit, entry_value)
+            # Place trade on MetaApi (pass entry as None for now, will use market price)
+            await place_trade(trade_type, stop_loss, take_profit, entry)
 
         else:
             print("Email does not contain #BTCUSD, skipping...")
 
-    except ValueError as ve:
-        # Ignore the ValueError caused by "now" entry conversion
-        if "could not convert string to float: 'now'" in str(ve):
-            print("Entry is set to 'now', using market price.")
-        else:
-            print(f"Value error processing message: {ve}")
     except Exception as e:
         print(f"Error processing message: {e}")
 
@@ -135,6 +124,8 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
                 entry_price = price_data['ask']
             else:
                 entry_price = price_data['bid']
+        else:
+            entry_price = entry  # Use the provided entry price if it's a float
 
         # Calculate stop loss distance based on trade type
         if trade_type == 'buy':
@@ -201,4 +192,4 @@ if __name__ == "__main__":
     telegram_thread.start()
 
     # Run the async email checker loop
-    asyncio.run(main())
+    asyncio.run(main()) 
