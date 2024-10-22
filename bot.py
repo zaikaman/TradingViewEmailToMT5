@@ -59,10 +59,12 @@ async def process_email(subject, body):
     try:
         # Check if the email contains the "hit" keyword
         if "hit" in body.lower():
-            # Remove the subject line and send the remaining body to the Telegram channel
-            lines = body.strip().split("\n")
-            body_without_subject = "\n".join(lines[1:])  # Skip the first line (subject line)
-            bot.send_message(CHAT_ID, body_without_subject)
+            # Send the whole body to the Telegram channel if "hit" is found
+            if body.strip():  # Ensure the body is not empty before sending
+                bot.send_message(CHAT_ID, body)
+            else:
+                print("Email body is empty, skipping...")
+
             return  # Skip further processing if "hit" is found
 
         # Process the email if it contains "#BTCUSD"
@@ -82,7 +84,12 @@ async def process_email(subject, body):
 
             # Log the signal
             message = f"{body.strip()}"
-            bot.send_message(CHAT_ID, message)
+
+            # Ensure the message is not empty before sending
+            if message.strip():  # Check if there's any non-whitespace content
+                bot.send_message(CHAT_ID, message)
+            else:
+                print("Message content is empty, skipping...")
 
             # Place trade on MetaApi (pass entry as None for now, will use market price)
             await place_trade(trade_type, stop_loss, take_profit, entry)
