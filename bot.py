@@ -54,10 +54,9 @@ async def check_email():
                     body = msg.get_payload(decode=True).decode()
                     await process_email(subject, body)
 
-# Async function to process the email and place a trade or handle "hit"
 async def process_email(subject, body):
     try:
-        # Check if the email contains the "hit" keyword
+        # Check if the email contains the word "hit"
         if "hit" in body.lower():
             # Send the whole body to the Telegram channel if "hit" is found
             if body.strip():  # Ensure the body is not empty before sending
@@ -66,6 +65,18 @@ async def process_email(subject, body):
                 print("Email body is empty, skipping...")
 
             return  # Skip further processing if "hit" is found
+
+        # Check if the email contains the word "reversal"
+        if "reversal" in body.lower():
+            # Send the entire body to the Telegram channel
+            if body.strip():  # Ensure the body is not empty before sending
+                bot.send_message(CHAT_ID, body)
+                # Call place_trade with reversal action
+                await place_trade("reversal", None, None, None)
+            else:
+                print("Email body is empty, skipping...")
+
+            return  # Skip further processing if "reversal" is found
 
         # Process the email if it contains "#BTCUSD"
         if "#BTCUSD" in body:
@@ -122,6 +133,12 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
         # Wait for the connection to be ready and synchronized
         print("Waiting for connection to be synchronized...")
         await connection.wait_synchronized()
+
+        if trade_type == "reversal":
+            # Close all positions for BTCUSD
+            await connection.close_positions_by_symbol(symbol='BTCUSD')
+            print("Closed all positions for BTCUSD due to reversal signal.")
+            return
 
         # Get account information, including balance
         account_info = await connection.get_account_information()
