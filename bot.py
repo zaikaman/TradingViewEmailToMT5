@@ -54,9 +54,18 @@ async def check_email():
                     body = msg.get_payload(decode=True).decode()
                     await process_email(subject, body)
 
-# Async function to process the email and place a trade
+# Async function to process the email and place a trade or handle "hit"
 async def process_email(subject, body):
     try:
+        # Check if the email contains the "hit" keyword
+        if "hit" in body.lower():
+            # Remove the subject line and send the remaining body to the Telegram channel
+            lines = body.strip().split("\n")
+            body_without_subject = "\n".join(lines[1:])  # Skip the first line (subject line)
+            bot.send_message(CHAT_ID, body_without_subject)
+            return  # Skip further processing if "hit" is found
+
+        # Process the email if it contains "#BTCUSD"
         if "#BTCUSD" in body:
             lines = body.strip().split("\n")
             pair = lines[0].split(": ")[1].strip()
@@ -118,17 +127,6 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
         symbol = 'BTCUSD'
         price_data = await connection.get_symbol_price(symbol)
         
-        # Check for existing open positions
-        open_positions = await connection.get_positions(symbol)
-
-        # Close any opposite position
-        if open_positions:
-            for position in open_positions:
-                if ((position['type'] == 'BUY' and trade_type == 'sell') or 
-                    (position['type'] == 'SELL' and trade_type == 'buy')):
-                    print(f"Closing opposite position: {position}")
-                    await connection.close_positions_by_symbol(symbol='BTCUSD')
-
         # If entry is "now", use the current market price
         if entry == "now":
             if trade_type == 'buy':
