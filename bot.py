@@ -78,8 +78,8 @@ async def process_email(subject, body):
 
             return  # Skip further processing if "reversal" is found
 
-        # Process the email if it contains "#BTCUSD"
-        if "#BTCUSD" in body:
+        # Process the email if it contains "#ETHUSD"
+        if "#ETHUSD" in body:
             lines = body.strip().split("\n")
             pair = lines[0].split(": ")[1].strip()
             trade_type = lines[1].split(": ")[1].strip().lower()  # buy or sell
@@ -106,7 +106,7 @@ async def process_email(subject, body):
             await place_trade(trade_type, stop_loss, take_profit, entry)
 
         else:
-            print("Email does not contain #BTCUSD, skipping...")
+            print("Email does not contain #ETHUSD, skipping...")
 
     except Exception as e:
         print(f"Error processing message: {e}")
@@ -135,9 +135,9 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
         await connection.wait_synchronized()
 
         if trade_type == "reversal":
-            # Close all positions for BTCUSD
-            await connection.close_positions_by_symbol(symbol='BTCUSD')
-            print("Closed all positions for BTCUSD due to reversal signal.")
+            # Close all positions for ETHUSD
+            await connection.close_positions_by_symbol(symbol='ETHUSD')
+            print("Closed all positions for ETHUSD due to reversal signal.")
             return
 
         # Get account information, including balance
@@ -147,8 +147,8 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
         risk_percent = 0.01  # 1% risk
         risk_amount = balance * risk_percent
 
-        # Get the current market price for BTCUSD
-        symbol = 'BTCUSD'
+        # Get the current market price for ETHUSD
+        symbol = 'ETHUSD'
         price_data = await connection.get_symbol_price(symbol)
         
         # If entry is "now", use the current market price
@@ -170,7 +170,7 @@ async def place_trade(trade_type, stop_loss, take_profit, entry=None):
             raise Exception("Invalid stop loss distance. Please check the stop loss value.")
 
         # Calculate position size (volume)
-        value_per_pip_per_lot = 1  # For BTCUSD, typically $1 per pip for 1 lot
+        value_per_pip_per_lot = 1  # For ETHUSD, typically $1 per pip for 1 lot
         position_size = risk_amount / (stop_loss_distance * value_per_pip_per_lot)
 
         # Ensure volume meets minimum requirements
