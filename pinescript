@@ -279,8 +279,8 @@ if (atr > atrAvg)
     shortStopLoss := ta.highest(high, 3)
 else
     // Nếu ATR hiện tại thấp hơn hoặc bằng trung bình, dùng nearestSwingLow và nearestSwingHigh
-    longStopLoss := nearestSwingLow * (1 - stopLossChangePercent)
-    shortStopLoss := nearestSwingHigh * (1 + stopLossChangePercent)
+    longStopLoss := nearestSwingLow
+    shortStopLoss := nearestSwingHigh
 
 // Kiểm tra xem thanh hiện tại có chứa giá trị high/low để dừng giao dịch nếu xảy ra
 isCurrentBarSwingLow = (low == longStopLoss) // Nếu giá thấp nhất trong thanh hiện tại trùng với longStopLoss
@@ -337,12 +337,8 @@ if (longCondition and strategy.position_size <= 0 and allowLong and canOpenTrade
     box.set_lefttop(longBoxSL, bar_index, close)
     box.set_rightbottom(longBoxSL, bar_index + 5, longStopLoss)
 
-    // Tăng giá trị longStopLoss và longTakeProfit thêm 50
-    longStopLossAdjusted = longStopLoss + 4
-    longTakeProfitAdjusted = longTakeProfit + 4
-
     // Alert for long entry
-    alert("PAIR: #ETHUSD\nTYPE: buy\nENTRY: now\nSTOPLOSS: " + str.tostring(longStopLossAdjusted) + "\nTAKEPROFIT: " + str.tostring(longTakeProfitAdjusted), alert.freq_once_per_bar_close)
+    alert("PAIR: #ETHUSD\nTYPE: buy\nENTRY: now\nSTOPLOSS: " + str.tostring(longStopLoss) + "\nTAKEPROFIT: " + str.tostring(longTakeProfit), alert.freq_once_per_bar_close)
 
 // Execute short trades with Stop Loss, Take Profit, and quantity (qty)
 if (shortCondition and strategy.position_size >= 0 and allowShort and canOpenTrade)
@@ -367,12 +363,8 @@ if (shortCondition and strategy.position_size >= 0 and allowShort and canOpenTra
     box.set_lefttop(shortBoxSL, bar_index, shortStopLoss)
     box.set_rightbottom(shortBoxSL, bar_index + 5, close)
 
-    // Tăng giá trị shortStopLoss và shortTakeProfit thêm 50
-    shortStopLossAdjusted = shortStopLoss + 4
-    shortTakeProfitAdjusted = shortTakeProfit + 4
-
     // Cảnh báo
-    alert("PAIR: #ETHUSD\nTYPE: sell\nENTRY: now\nSTOPLOSS: " + str.tostring(shortStopLossAdjusted) + "\nTAKEPROFIT: " + str.tostring(shortTakeProfitAdjusted), alert.freq_once_per_bar_close)
+    alert("PAIR: #ETHUSD\nTYPE: sell\nENTRY: now\nSTOPLOSS: " + str.tostring(shortStopLoss) + "\nTAKEPROFIT: " + str.tostring(shortTakeProfit), alert.freq_once_per_bar_close)
 
 // Deleting old boxes if array size exceeds limit
 if array.size(longBoxes) > 500
