@@ -71,8 +71,8 @@ if not na(pivLo)
     l := true
     prevLowIndex  := bar_index - swingSizeR
 
-CloseLong = low < low[1] and close > high[1]  and open <close[1]
-CloseShort = high > high[1] and close < low[1] and open >open[1]
+CloseShort = low < low[1] and close > high[1]  and open <close[1]
+CloseLong = high > high[1] and close < low[1] and open >open[1]
 
 //Volume, OI, box width
 vol         = volume[swingSizeR]
@@ -393,14 +393,14 @@ if isShort
 // Variable to track if the trade was closed due to reversal signals or take profit/stop loss
 var bool closedDueToReversal = false
 
-if (CloseShort and strategy.position_size > 0 and isLong)
+if (CloseLong and strategy.position_size > 0 and isLong)
     strategy.close("Long", comment="Reversal")  // Đóng vị thế mua với comment "Long Closed"
     alert("Closed long trade due to reversal signal!", alert.freq_once_per_bar_close)
     isLong := false  // Đặt lại cờ cho vị thế mua
     closedDueToReversal := true  // Đánh dấu rằng giao dịch đã đóng do tín hiệu đảo chiều
     barsSinceLastTrade := 0
 
-if (CloseLong and strategy.position_size < 0 and isShort)
+if (CloseShort and strategy.position_size < 0 and isShort)
     strategy.close("Short", comment="Reversal")  // Đóng vị thế bán với comment "Short Closed"
     alert("Closed short trade due to reversal signal!", alert.freq_once_per_bar_close)
     isShort := false  // Đặt lại cờ cho vị thế bán
