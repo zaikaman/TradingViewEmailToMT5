@@ -71,9 +71,6 @@ if not na(pivLo)
     l := true
     prevLowIndex  := bar_index - swingSizeR
 
-CloseShort = low < low[1] and close > high[1]  and open <close[1]
-CloseLong = high > high[1] and close < low[1] and open >open[1]
-
 //Volume, OI, box width
 vol         = volume[swingSizeR]
 voltreshcond = voltresh > 0 ? vol > voltresh : true
@@ -247,9 +244,12 @@ histColor = macdHist >= 0 ? (macdHist > macdHist[1] ? color.green : color.lime) 
 bearishEngulfing = close[1] > open[1] and open > close and open >= close[1] and open[1] >= close and open - close > close[1] - open[1]
 bullishEngulfing = open[1] > close[1] and close > open and close >= open[1] and close[1] >= open and close - open > open[1] - close[1]
 
+CloseShort = low < low[1] and close > high[1]  and open <close[1]
+CloseLong = high > high[1] and close < low[1] and open >open[1]
+
 // Entry conditions
-longCondition = buy and macdHist > 0  and trend_supertrend == 1 and close > v_ema200 // and bullishEngulfing
-shortCondition = sell and macdHist < 0  and trend_supertrend == -1 and close < v_ema200 // and bearishEngulfing
+longCondition = buy and macdHist > 0  and trend_supertrend == 1 // and close > v_ema200 // and bullishEngulfing
+shortCondition = sell and macdHist < 0  and trend_supertrend == -1 // and close < v_ema200 // and bearishEngulfing
 
 // Variables to track whether the position is long or short
 var bool isLong = false
