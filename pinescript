@@ -1,3 +1,4 @@
+
 //@version=5
 strategy('ETHUSDT.P Binance King Strategy', overlay=true)
 
