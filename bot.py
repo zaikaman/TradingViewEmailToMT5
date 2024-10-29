@@ -84,8 +84,8 @@ async def process_email(subject, body):
             pair = lines[0].split(": ")[1].strip()
             trade_type = lines[1].split(": ")[1].strip().lower()  # buy or sell
             entry_str = lines[2].split(": ")[1].strip()
-            stop_loss = float(lines[3].split(": ")[1].strip()) - 3  # Increase stop loss by 4
-            take_profit = float(lines[4].split(": ")[1].strip()) - 3  # Increase take profit by 4
+            stop_loss = float(lines[3].split(": ")[1].strip()) - 4  # Increase stop loss by 4
+            take_profit = float(lines[4].split(": ")[1].strip()) - 4  # Increase take profit by 4
 
             # Check if the entry is "now" or a numeric value
             if entry_str.lower() == "now":
