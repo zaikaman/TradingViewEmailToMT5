@@ -1,40 +1,6 @@
 //@version=5
 strategy('ETHUSDT.P Binance King Strategy', overlay=true)
 
-// // NYAM session settings
-// nyam_session = input.session("0930-1100", "NYAM Session")
-// nyam_color = input.color(#089981, "NYAM Color")
-
-// // Check if current bar is in NYAM session
-// in_nyam = not na(time("", nyam_session, "America/New_York"))
-
-// // Variables to store NYAM High and Low
-// var float nyam_high = na
-// var float nyam_low = na
-
-// // Variables to store lines for NYAM High and Low
-// var line nyam_high_line = na
-// var line nyam_low_line = na
-
-// // Track highest and lowest values during NYAM session
-// if in_nyam
-//     nyam_high := na(nyam_high) ? high : math.max(nyam_high, high)
-//     nyam_low := na(nyam_low) ? low : math.min(nyam_low, low)
-
-// // At the first bar after NYAM session ends, plot the pivot high and low lines
-// if (not in_nyam and in_nyam[1])
-//     // Delete previous lines
-//     line.delete(nyam_high_line)
-//     line.delete(nyam_low_line)
-    
-//     // Draw new lines at the pivot points
-//     nyam_high_line := line.new(bar_index[1], nyam_high, bar_index, nyam_high, color=nyam_color, width=2, extend=extend.right)
-//     nyam_low_line := line.new(bar_index[1], nyam_low, bar_index, nyam_low, color=nyam_color, width=2, extend=extend.right)
-    
-//     // Reset NYAM high and low for the next session
-//     nyam_high := na
-//     nyam_low := na
-
 // Variables
 var countBuy = 0
 var countSell = 0
@@ -42,6 +8,9 @@ src = input(close, title='OHLC Type')
 i_fastEMA = input(12, title='Fast EMA')
 i_slowEMA = input(25, title='Slow EMA')
 i_ema200 = input(200, title='200 EMA')
+
+// Giá hiện tại
+currentPrice = close
 
 // Define stop loss change percentage variable
 stopLossChangePercent = input.float(0.0006, title="Stop Loss Change Percentage", minval=0) / 100
@@ -282,8 +251,8 @@ bearishEngulfing = close[1] > open[1] and open > close and open >= close[1] and 
 bullishEngulfing = open[1] > close[1] and close > open and close >= open[1] and close[1] >= open and close - open > open[1] - close[1]
 
 // Entry conditions
-longCondition = buy and macdHist > 0  and trend_supertrend == 1 and close > v_ema200 // and bullishEngulfing
-shortCondition = sell and macdHist < 0  and trend_supertrend == -1 and close < v_ema200 // and bearishEngulfing
+longCondition = buy and macdHist > 0  and trend_supertrend == 1 and close > v_ema200 and close < nearestSwingHigh// and bullishEngulfing
+shortCondition = sell and macdHist < 0  and trend_supertrend == -1 and close < v_ema200 and close > nearestSwingLow// and bearishEngulfing
 
 // Variables to track whether the position is long or short
 var bool isLong = false
@@ -292,8 +261,6 @@ var bool isShort = false
 // Risk management parameters
 balance = input.float(1000.0, title="Account Balance")  // Default balance of $1000
 riskPercent = input.float(1.0, title="Risk Percent", minval=0.01, maxval=100)  // Default risk of 1%
-
-// var float currentBalance = balance
 
 // Parameters
 riskAmount = strategy.equity * (riskPercent / 100)
@@ -340,12 +307,6 @@ riskRewardRatio = input.float(3.5, 'Risk/Reward Ratio', minval = 0.1, step = 0.1
 longTakeProfit = close + longStopLossDistance * riskRewardRatio
 shortTakeProfit = close - shortStopLossDistance * riskRewardRatio
 
-// if (longTakeProfit > nyam_high)
-//     longTakeProfit := nyam_high
-
-// if (shortTakeProfit < nyam_low)
-//     shortTakeProfit := nyam_low
-
 // Calculate position size (qty) based on the risk amount and stop-loss distance
 longQty = riskAmount / longStopLossDistance  // Qty for long trade
 shortQty = riskAmount / shortStopLossDistance  // Qty for short trade
@@ -378,7 +339,7 @@ if (longCondition and strategy.position_size <= 0 and allowLong and canOpenTrade
     box.set_rightbottom(longBoxSL, bar_index + 5, longStopLoss)
 
     // Alert for long entry
-    alert("PAIR: #ETHUSD\nTYPE: buy\nENTRY: now\nSTOPLOSS: " + str.tostring(longStopLoss) + "\nTAKEPROFIT: " + str.tostring(longTakeProfit), alert.freq_once_per_bar_close)
+    alert("PAIR: #ETHUSD\nTYPE: buy\nENTRY: now\nSTOPLOSS: " + str.tostring(longStopLoss) + "\nTAKEPROFIT: " + str.tostring(longTakeProfit) + "\nCURRENT PRICE: " + str.tostring(currentPrice), alert.freq_once_per_bar_close)
 
 // Execute short trades with Stop Loss, Take Profit, and quantity (qty)
 if (shortCondition and strategy.position_size >= 0 and allowShort and canOpenTrade)
@@ -404,7 +365,7 @@ if (shortCondition and strategy.position_size >= 0 and allowShort and canOpenTra
     box.set_rightbottom(shortBoxSL, bar_index + 5, close)
 
     // Cảnh báo
-    alert("PAIR: #ETHUSD\nTYPE: sell\nENTRY: now\nSTOPLOSS: " + str.tostring(shortStopLoss) + "\nTAKEPROFIT: " + str.tostring(shortTakeProfit), alert.freq_once_per_bar_close)
+    alert("PAIR: #ETHUSD\nTYPE: sell\nENTRY: now\nSTOPLOSS: " + str.tostring(shortStopLoss) + "\nTAKEPROFIT: " + str.tostring(shortTakeProfit) + "\nCURRENT PRICE: " + str.tostring(currentPrice), alert.freq_once_per_bar_close)
 
 // Deleting old boxes if array size exceeds limit
 if array.size(longBoxes) > 500
